@@ -1,0 +1,202 @@
+
+//Telephone directory
+#include&lt;iostream&gt;// For standard I/O functions
+using namespace std;
+#include&lt;string.h&gt;// string functions
+#include&lt;fstream&gt;// file operations
+#include&lt;stdlib.h&gt;// For exit(0)
+
+// class declaration
+class phone {
+char Name[50] ;
+char phno[11] ;
+public:
+phone() // default constructor
+{
+for(int i=0;i&lt;50;i++)
+{
+Name[i]=&#39; &#39;;
+if(i&lt;11)
+phno[i]=&#39;0&#39; ;
+}
+}
+void getdata() // function to input data
+{
+cout&lt;&lt;&quot;Enter name: &quot;;
+cin&gt;&gt;Name ;
+cout&lt;&lt;&quot;\nEnter phone no: &quot;;
+cin&gt;&gt;phno ;
+
+}
+
+void putdata()// function to print data
+{
+cout.write(Name,10) ;
+cout&lt;&lt;&quot; &quot;&lt;&lt;phno&lt;&lt;&quot;\n&quot; ;
+}
+char* getname()
+{
+return Name ;
+}
+void modify() ;
+}
+p2 ;// class definition terminated
+
+void phone::modify()// function to modify data in a file
+{
+cout&lt;&lt;&quot;Name: &quot;&lt;&lt;Name&lt;&lt;&quot;\nPhone number: &quot;&lt;&lt;phno&lt;&lt;endl ;
+char nm[50]=&quot; &quot;,ph[11]=&quot;0&quot;,ch ;
+cout&lt;&lt;&quot;MENU\n1 - Modify only name\n2 - Modify only number\n3 - Modify name and
+number\nEnter your option: &quot; ;
+cin&gt;&gt;ch ;
+if(ch==&#39;1&#39; || ch==&#39;3&#39;)
+{
+cout&lt;&lt;&quot;Enter name:(Enter &#39;.&#39; to retain old one)&quot;;
+cin&gt;&gt;nm ;
+if(strcmp(nm,&quot;.&quot;)!=0)
+strcpy(Name,nm) ;
+
+}
+if(ch==&#39;2&#39; || ch==&#39;3&#39;)
+{
+cout&lt;&lt;&quot;Enter phno:(Press &#39;.&#39; to retain old one)&quot; ;
+cin&gt;&gt;ph ;
+if(strcmp(ph,&quot;.&quot;)!=0)
+strcpy(phno,ph) ;
+}
+}
+
+int main() // main function
+{
+int i;
+char ch,C ;
+do
+{
+fstream fio(&quot;Pho.txt&quot;,ios::in|ios::binary) ;
+cout&lt;&lt;&quot;-----------------TELEPHONE DIRECTORY---------------\n&quot; ;
+while(fio.read((char*)&amp;p2,sizeof(p2)))// Loop to print data present in file
+{
+p2.putdata() ;
+}
+
+fio.close() ;
+cout&lt;&lt;&quot;\nHere is a database of contacts\n&quot; ;
+
+cout&lt;&lt;&quot;MENU\n1 - Add a phone number\n2 - Edit a phone number\n3 - Delete a phone
+number\n4 - Display contacts\n5 - Exit\nChoose your option:&quot; ;
+
+cin&gt;&gt;ch ;
+if(ch==&#39;1&#39;)//adding a record
+{
+ofstream fo(&quot;Pho.txt&quot;,ios::app|ios::binary) ;
+char ans=&#39;y&#39; ;
+while(ans==&#39;y&#39; || ans==&#39;Y&#39;)
+{
+p2.getdata() ;
+fo.write((char*)&amp;p2,sizeof(p2)) ;
+cout&lt;&lt;&quot;Record added to file.Want to add more?&quot; ;
+cin&gt;&gt;ans ;
+}
+fo.close();
+}
+
+else if(ch==&#39;2&#39;)//modifying a record
+{
+fstream fiom(&quot;Pho.txt&quot;,ios::in|ios::out|ios::binary) ;
+char p[11] ;
+long pos ;
+char found=&#39;f&#39; ;
+cout&lt;&lt;&quot;Enter the contact name to be modified: &quot;;
+cin&gt;&gt;p ;
+while(!fiom.eof())
+{
+char *p12=p2.getname() ;
+pos=fiom.tellg() ;
+
+fiom.read((char*)&amp;p2,sizeof(p2)) ;
+if(strcmp(p12,p)==0)
+{
+p2.modify() ;
+fiom.seekg(pos) ;
+fiom.write((char*)&amp;p2,sizeof(p2)) ;
+found=&#39;t&#39; ;
+break ;
+}
+}
+if(found==&#39;f&#39;)
+cout&lt;&lt;&quot;Record not found\n&quot; ;
+
+cout&lt;&lt;&quot;------------------TELEPHONE DIRECTORY-----------------\n&quot; ;
+fiom.seekg(0) ;
+while(!fiom.eof())
+{
+fiom.read((char*)&amp;p2,sizeof(p2)) ;
+if(fiom.eof()) break ;
+p2.putdata() ;
+}
+fiom.close() ;
+}
+
+if(ch==&#39;3&#39;)//deleting a record
+{ ifstream fi(&quot;Pho.txt&quot;,ios::in) ;
+
+ofstream fo(&quot;temp.txt&quot;,ios::out) ;
+char n[50] ;
+char found=&#39;f&#39;,confirm=&#39;n&#39; ;
+cout&lt;&lt;&quot;Enter the name of the contact to be deleted\n&quot; ;
+cin&gt;&gt;n ;
+while(fi.read((char*)&amp;p2,sizeof(p2)))
+{
+char *p12=p2.getname() ;
+
+if(strcmp(p12,n)==0)
+{ p2.putdata() ;
+found=&#39;t&#39; ;
+
+cout&lt;&lt;&quot;\nDo you want to delete this record?&quot; ;
+cin&gt;&gt;confirm ;
+if(confirm==&#39;n&#39;)
+fo.write((char*)&amp;p2,sizeof(p2)) ;
+}
+else
+fo.write((char*)&amp;p2,sizeof(p2)) ;
+}
+if(found==&#39;f&#39;)
+cout&lt;&lt;&quot;\nRecord not found\n&quot; ;
+fi.close() ; fo.close() ;
+remove(&quot;Pho.txt&quot;) ;
+rename(&quot;temp.txt&quot;,&quot;Pho.txt&quot;) ;
+
+fi.open(&quot;Pho.txt&quot;,ios::in) ;
+cout&lt;&lt;&quot;----------------TELEPHONE DIRECTORY------------------\n&quot; ;
+while(fi.read((char*)&amp;p2,sizeof(p2)))
+{
+if(fi.eof()) break ;
+p2.putdata() ;
+}
+
+fi.close() ;
+}
+
+if(ch==&#39;4&#39;)// to display records
+{
+ifstream fi(&quot;Pho.txt&quot;,ios::in) ;
+while(fi.read((char*)&amp;p2,sizeof(p2)))
+{
+if(fi.eof()) break ;
+p2.putdata() ;
+}
+}
+if(ch==&#39;5&#39;)
+{
+cout&lt;&lt;&quot;\n\t\t\t MADE BY: SRIKAR , ADVAITA, SRINIDHI AND HARSHITA\n&quot; ;
+cout&lt;&lt;&quot;\t\t\t\t\tXII - &#39;A&#39;\n\n\t\t\t\t THANK YOU\n&quot; ;
+exit(0) ;
+
+}
+cout&lt;&lt;&quot;Do you want to continue?&quot; ;
+cin&gt;&gt;C ;
+system(&quot;clear&quot;) ;
+}while(C==&#39;y&#39; || C==&#39;Y&#39;) ;
+return 0;
+}// end of program
